@@ -1,13 +1,45 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/server'
 import { addIngredient } from '@/lib/actions/ingredients'
+import { lookupBarcode } from '@/lib/openfoodfacts'
+import { suggestCategoryName } from '@/lib/category-mapping'
 
-export default async function NouvelIngredientPage() {
+type SearchParams = Promise<{ barcode?: string }>
+
+export default async function NouvelIngredientPage({
+  searchParams,
+}: {
+  searchParams: SearchParams
+}) {
+  const { barcode } = await searchParams
+
   const supabase = await createClient()
   const { data: categories } = await supabase
     .from('categories_aliments')
     .select('id, nom, duree_typique_jours')
     .order('nom')
+
+  let prefilledName = ''
+  let prefilledImage: string | null = null
+  let prefilledCategoryId: number | null = null
+  let offError: string | null = null
+
+  if (barcode) {
+    const product = await lookupBarcode(barcode)
+    if (product) {
+      prefilledName = product.brand
+        ? `${product.name}${product.name && product.brand ? ' — ' : ''}${product.brand}`
+        : product.name
+      prefilledImage = product.imageUrl
+      const suggestedName = suggestCategoryName(product.categoryTags)
+      if (suggestedName) {
+        prefilledCategoryId = categories?.find((c) => c.nom === suggestedName)?.id ?? null
+      }
+    } else {
+      offError = `Produit introuvable dans Open Food Facts (code-barres ${barcode}). Saisis-le à la main.`
+    }
+  }
 
   const today = new Date().toISOString().split('T')[0]
 
@@ -21,8 +53,29 @@ export default async function NouvelIngredientPage() {
           ← Mes ingrédients
         </Link>
         <h1 className="text-3xl font-semibold text-zinc-50 tracking-tight mt-1 mb-8">
-          Nouvel ingrédient
+          {barcode ? 'Confirmer le produit' : 'Nouvel ingrédient'}
         </h1>
+
+        {offError && (
+          <div className="mb-6 bg-orange-950 border border-orange-900 rounded-xl p-4">
+            <p className="text-orange-300 text-sm">{offError}</p>
+          </div>
+        )}
+
+        {prefilledImage && (
+          <div className="mb-6 flex justify-center">
+            <div className="relative w-32 h-32 bg-zinc-900 rounded-xl overflow-hidden border border-zinc-800">
+              <Image
+                src={prefilledImage}
+                alt={prefilledName || 'Produit'}
+                fill
+                sizes="128px"
+                className="object-contain"
+                unoptimized
+              />
+            </div>
+          </div>
+        )}
 
         <form action={addIngredient} className="space-y-5">
           <div>
@@ -34,6 +87,7 @@ export default async function NouvelIngredientPage() {
               name="nom"
               type="text"
               required
+              defaultValue={prefilledName}
               placeholder="Ex : Lait Lactel demi-écrémé"
               className="w-full px-4 py-2.5 bg-zinc-900 border border-zinc-800 text-zinc-50 placeholder-zinc-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-500"
             />
@@ -47,7 +101,7 @@ export default async function NouvelIngredientPage() {
               id="categorie_id"
               name="categorie_id"
               required
-              defaultValue=""
+              defaultValue={prefilledCategoryId ?? ''}
               className="w-full px-4 py-2.5 bg-zinc-900 border border-zinc-800 text-zinc-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-500"
             >
               <option value="" disabled>
@@ -59,9 +113,11 @@ export default async function NouvelIngredientPage() {
                 </option>
               ))}
             </select>
-            <p className="text-xs text-zinc-600 mt-1">
-              La catégorie détermine la durée de conservation par défaut.
-            </p>
+            {prefilledCategoryId && (
+              <p className="text-xs text-emerald-400 mt-1">
+                Catégorie suggérée d'après Open Food Facts. Tu peux la changer.
+              </p>
+            )}
           </div>
 
           <div>

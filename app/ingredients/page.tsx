@@ -60,22 +60,30 @@ export default async function IngredientsPage() {
             </h1>
           </div>
 
-          <Link
-            href="/ingredients/nouveau"
-            className="bg-zinc-50 text-zinc-950 px-4 py-2 rounded-lg font-medium text-sm hover:bg-zinc-200 transition-colors"
-          >
-            + Ajouter
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/ingredients/nouveau"
+              className="text-zinc-400 hover:text-zinc-200 text-sm transition-colors"
+            >
+              Saisir
+            </Link>
+            <Link
+              href="/ingredients/scan"
+              className="bg-zinc-50 text-zinc-950 px-4 py-2 rounded-lg font-medium text-sm hover:bg-zinc-200 transition-colors"
+            >
+              Scanner
+            </Link>
+          </div>
         </div>
 
         {!ingredients || ingredients.length === 0 ? (
           <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-8 text-center">
             <p className="text-zinc-400 mb-4">Aucun ingrédient pour l'instant.</p>
             <Link
-              href="/ingredients/nouveau"
+              href="/ingredients/scan"
               className="inline-block bg-zinc-50 text-zinc-950 px-4 py-2 rounded-lg font-medium text-sm hover:bg-zinc-200 transition-colors"
             >
-              Ajouter le premier
+              Scanner le premier
             </Link>
           </div>
         ) : (
