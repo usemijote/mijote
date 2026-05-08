@@ -20,19 +20,21 @@ export default async function Home() {
             <p className="text-zinc-400 text-sm mb-1">Connecté en tant que</p>
             <p className="text-zinc-50 font-medium mb-6 break-all">{user.email}</p>
 
-            <div className="flex items-center justify-between">
-              <span className="text-zinc-600 text-xs">
-                Le scanner d'ingrédients arrive bientôt.
-              </span>
-              <form action="/auth/signout" method="post">
-                <button
-                  type="submit"
-                  className="text-sm text-zinc-400 hover:text-zinc-50 transition-colors"
-                >
-                  Se déconnecter
-                </button>
-              </form>
-            </div>
+            <Link
+              href="/ingredients"
+              className="block w-full text-center bg-zinc-50 text-zinc-950 px-4 py-2.5 rounded-lg font-medium hover:bg-zinc-200 transition-colors mb-3"
+            >
+              Mes ingrédients
+            </Link>
+
+            <form action="/auth/signout" method="post" className="text-center">
+              <button
+                type="submit"
+                className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors"
+              >
+                Se déconnecter
+              </button>
+            </form>
           </div>
         ) : (
           <Link
