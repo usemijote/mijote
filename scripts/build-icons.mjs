@@ -1,3 +1,8 @@
+// Génère les icônes PWA depuis public/logo-source.png
+// Sharp n'est pas une dépendance permanente (build Vercel trop lent).
+// Installer temporairement avant de lancer : npm install --no-save sharp
+// puis : npm run icons
+
 import sharp from 'sharp'
 import { fileURLToPath } from 'url'
 import path from 'path'
