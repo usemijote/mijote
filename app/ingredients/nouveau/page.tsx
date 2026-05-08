@@ -134,6 +134,21 @@ export default async function NouvelIngredientPage({
             />
           </div>
 
+          <div>
+            <label htmlFor="date_peremption_override" className="block text-sm font-medium text-zinc-300 mb-2">
+              Date de péremption <span className="text-zinc-600 font-normal">(optionnel)</span>
+            </label>
+            <input
+              id="date_peremption_override"
+              name="date_peremption_override"
+              type="date"
+              className="w-full px-4 py-2.5 bg-zinc-900 border border-zinc-800 text-zinc-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-500"
+            />
+            <p className="text-xs text-zinc-600 mt-1">
+              Si tu vois la DLC sur l'emballage, saisis-la pour plus de précision. Sinon Mijote calcule depuis la catégorie.
+            </p>
+          </div>
+
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label htmlFor="quantite" className="block text-sm font-medium text-zinc-300 mb-2">

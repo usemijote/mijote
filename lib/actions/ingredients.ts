@@ -14,6 +14,7 @@ export async function addIngredient(formData: FormData) {
   const nom = String(formData.get('nom') ?? '').trim()
   const categorieId = Number(formData.get('categorie_id'))
   const dateAchatStr = String(formData.get('date_achat') ?? '')
+  const datePeremptionOverrideStr = String(formData.get('date_peremption_override') ?? '').trim()
   const quantiteRaw = formData.get('quantite')
   const uniteRaw = formData.get('unite')
 
@@ -21,24 +22,31 @@ export async function addIngredient(formData: FormData) {
   if (!categorieId) throw new Error('La catégorie est obligatoire')
   if (!dateAchatStr) throw new Error('La date d\'achat est obligatoire')
 
-  const { data: categorie, error: catError } = await supabase
-    .from('categories_aliments')
-    .select('duree_typique_jours')
-    .eq('id', categorieId)
-    .single()
+  let datePeremptionStr: string
 
-  if (catError || !categorie) throw new Error('Catégorie introuvable')
+  if (datePeremptionOverrideStr) {
+    datePeremptionStr = datePeremptionOverrideStr
+  } else {
+    const { data: categorie, error: catError } = await supabase
+      .from('categories_aliments')
+      .select('duree_typique_jours')
+      .eq('id', categorieId)
+      .single()
 
-  const dateAchat = new Date(dateAchatStr)
-  const datePeremption = new Date(dateAchat)
-  datePeremption.setDate(datePeremption.getDate() + categorie.duree_typique_jours)
+    if (catError || !categorie) throw new Error('Catégorie introuvable')
+
+    const dateAchat = new Date(dateAchatStr)
+    const datePeremption = new Date(dateAchat)
+    datePeremption.setDate(datePeremption.getDate() + categorie.duree_typique_jours)
+    datePeremptionStr = datePeremption.toISOString().split('T')[0]
+  }
 
   const { error } = await supabase.from('ingredients').insert({
     user_id: user.id,
     nom,
     categorie_id: categorieId,
     date_achat: dateAchatStr,
-    date_peremption: datePeremption.toISOString().split('T')[0],
+    date_peremption: datePeremptionStr,
     quantite: quantiteRaw ? Number(quantiteRaw) : null,
     unite: uniteRaw ? String(uniteRaw).trim() || null : null,
   })
