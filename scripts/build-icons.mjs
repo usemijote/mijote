@@ -11,6 +11,11 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const publicDir = path.join(__dirname, '..', 'public')
 const source = path.join(publicDir, 'logo-source.png')
 
+// Crop centré pour zoomer sur la marmite (sans le texte "Mijote" en bas)
+// L'image source fait 1024×1024 ; on prend une zone de 540×540 centrée vers le haut
+// où se trouve la marmite + le check + le code-barres
+const CROP = { left: 280, top: 80, width: 470, height: 470 }
+
 const sizes = [
   { name: 'icon-192.png', size: 192 },
   { name: 'icon-512.png', size: 512 },
@@ -21,6 +26,7 @@ const sizes = [
 
 for (const { name, size } of sizes) {
   await sharp(source)
+    .extract(CROP)
     .resize(size, size, { fit: 'cover' })
     .png()
     .toFile(path.join(publicDir, name))
