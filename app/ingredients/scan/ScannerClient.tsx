@@ -2,16 +2,10 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { BrowserMultiFormatReader } from '@zxing/browser'
+import { BarcodeFormat, DecodeHintType } from '@zxing/library'
 
-type Status = 'init' | 'unsupported' | 'permission_denied' | 'scanning' | 'detected' | 'error'
-
-declare global {
-  interface Window {
-    BarcodeDetector?: new (options?: { formats?: string[] }) => {
-      detect: (source: HTMLVideoElement) => Promise<{ rawValue: string }[]>
-    }
-  }
-}
+type Status = 'init' | 'permission_denied' | 'scanning' | 'detected' | 'error'
 
 export default function ScannerClient() {
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -21,52 +15,44 @@ export default function ScannerClient() {
 
   useEffect(() => {
     if (typeof window === 'undefined') return
-    if (!window.BarcodeDetector) {
-      setStatus('unsupported')
-      return
-    }
 
-    let stream: MediaStream | null = null
+    const hints = new Map<DecodeHintType, unknown>()
+    hints.set(DecodeHintType.POSSIBLE_FORMATS, [
+      BarcodeFormat.EAN_13,
+      BarcodeFormat.EAN_8,
+      BarcodeFormat.UPC_A,
+      BarcodeFormat.UPC_E,
+      BarcodeFormat.CODE_128,
+      BarcodeFormat.QR_CODE,
+    ])
+    hints.set(DecodeHintType.TRY_HARDER, true)
+
+    const codeReader = new BrowserMultiFormatReader(hints)
     let cancelled = false
-    let animationFrameId: number | null = null
+    let controls: { stop: () => void } | null = null
 
     async function start() {
       try {
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { ideal: 'environment' } },
-        })
-        if (cancelled) {
-          stream.getTracks().forEach((t) => t.stop())
-          return
-        }
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream
-          await videoRef.current.play()
-          setStatus('scanning')
-        }
-
-        const detector = new window.BarcodeDetector!({
-          formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128'],
-        })
-
-        const loop = async () => {
-          if (cancelled || !videoRef.current) return
-          try {
-            const codes = await detector.detect(videoRef.current)
-            if (codes.length > 0) {
-              const code = codes[0].rawValue
+        const result = await codeReader.decodeFromVideoDevice(
+          undefined,
+          videoRef.current!,
+          (result) => {
+            if (cancelled) return
+            if (result) {
+              const code = result.getText()
               setStatus('detected')
               cancelled = true
-              stream?.getTracks().forEach((t) => t.stop())
+              controls?.stop()
               router.push(`/ingredients/nouveau?barcode=${encodeURIComponent(code)}`)
-              return
             }
-          } catch {
-            // detect peut throw si la vidéo n'est pas prête, on continue
           }
-          animationFrameId = requestAnimationFrame(loop)
+        )
+        if (cancelled) {
+          result.stop()
+          return
         }
-        loop()
+        controls = result
+        setStatus('scanning')
       } catch (e: unknown) {
         const err = e as { name?: string; message?: string }
         if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
@@ -82,22 +68,9 @@ export default function ScannerClient() {
 
     return () => {
       cancelled = true
-      if (animationFrameId !== null) cancelAnimationFrame(animationFrameId)
-      stream?.getTracks().forEach((t) => t.stop())
+      controls?.stop()
     }
   }, [router])
-
-  if (status === 'unsupported') {
-    return (
-      <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6 text-center">
-        <p className="text-zinc-50 font-medium mb-2">Scanner non supporté</p>
-        <p className="text-zinc-400 text-sm">
-          Ton navigateur ne supporte pas la détection de codes-barres.
-          Utilise Safari (iOS 17+) ou Chrome/Edge récent, ou ajoute manuellement.
-        </p>
-      </div>
-    )
-  }
 
   if (status === 'permission_denied') {
     return (
@@ -133,7 +106,11 @@ export default function ScannerClient() {
         </div>
       </div>
       <p className="text-center text-zinc-400 text-sm">
-        {status === 'detected' ? 'Code détecté…' : 'Vise le code-barres au centre du cadre'}
+        {status === 'detected'
+          ? 'Code détecté…'
+          : status === 'init'
+            ? 'Activation de la caméra…'
+            : 'Vise le code-barres au centre du cadre'}
       </p>
     </div>
   )
