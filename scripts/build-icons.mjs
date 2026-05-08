@@ -11,14 +11,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const publicDir = path.join(__dirname, '..', 'public')
 const source = path.join(publicDir, 'logo-source.png')
 
-// Crop centré sur la marmite + check + code-barres (sans le texte "Mijote")
-const CROP = { left: 280, top: 80, width: 470, height: 470 }
-
-// Padding autour du crop pour que les éléments rentrent dans le cercle iOS
-// (Apple recommande safe area à 80% du carré)
-const PADDING_RATIO = 0.13
-const BG = { r: 255, g: 255, b: 255, alpha: 1 } // blanc pur, matche le fond du crop
-
+// Pas de crop, pas de padding : l'image source telle quelle, redimensionnée.
 const sizes = [
   { name: 'icon-192.png', size: 192 },
   { name: 'icon-512.png', size: 512 },
@@ -28,19 +21,8 @@ const sizes = [
 ]
 
 for (const { name, size } of sizes) {
-  const padding = Math.round(size * PADDING_RATIO)
-  const innerSize = size - 2 * padding
-
   await sharp(source)
-    .extract(CROP)
-    .resize(innerSize, innerSize, { fit: 'cover' })
-    .extend({
-      top: padding,
-      bottom: padding,
-      left: padding,
-      right: padding,
-      background: BG,
-    })
+    .resize(size, size, { fit: 'cover' })
     .png()
     .toFile(path.join(publicDir, name))
   console.log(`✓ ${name} (${size}×${size})`)
