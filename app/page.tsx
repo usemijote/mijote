@@ -22,9 +22,15 @@ export default async function Home() {
 
             <Link
               href="/ingredients"
-              className="block w-full text-center bg-zinc-50 text-zinc-950 px-4 py-2.5 rounded-lg font-medium hover:bg-zinc-200 transition-colors mb-3"
+              className="block w-full text-center bg-zinc-50 text-zinc-950 px-4 py-2.5 rounded-lg font-medium hover:bg-zinc-200 transition-colors mb-2"
             >
               Mes ingrédients
+            </Link>
+            <Link
+              href="/recettes"
+              className="block w-full text-center bg-zinc-900 text-zinc-50 border border-zinc-800 px-4 py-2.5 rounded-lg font-medium hover:bg-zinc-800 transition-colors mb-3"
+            >
+              Recettes
             </Link>
 
             <form action="/auth/signout" method="post" className="text-center">

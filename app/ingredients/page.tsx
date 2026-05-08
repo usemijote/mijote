@@ -9,7 +9,41 @@ type IngredientRow = {
   date_peremption: string
   quantite: number | null
   unite: string | null
-  categorie: { nom: string } | null
+  categorie: { id: number; nom: string } | null
+}
+
+type RecetteWithCats = {
+  id: string
+  nom: string
+  temps_preparation_min: number | null
+  recette_ingredients: Array<{ categorie_id: number }>
+}
+
+function suggestRecettes(
+  ingredients: IngredientRow[],
+  recettes: RecetteWithCats[],
+  daysWindow: number
+): Array<{ id: string; nom: string; temps_preparation_min: number | null; matchCount: number }> {
+  const expiringSoonCatIds = new Set<number>()
+  for (const ing of ingredients) {
+    const jours = joursRestants(ing.date_peremption)
+    if (jours <= daysWindow && jours >= 0 && ing.categorie?.id) {
+      expiringSoonCatIds.add(ing.categorie.id)
+    }
+  }
+
+  if (expiringSoonCatIds.size === 0) return []
+
+  return recettes
+    .map((r) => {
+      const matchCount = r.recette_ingredients.filter((ri) =>
+        expiringSoonCatIds.has(ri.categorie_id)
+      ).length
+      return { id: r.id, nom: r.nom, temps_preparation_min: r.temps_preparation_min, matchCount }
+    })
+    .filter((r) => r.matchCount > 0)
+    .sort((a, b) => b.matchCount - a.matchCount)
+    .slice(0, 3)
 }
 
 function joursRestants(datePeremption: string): number {
@@ -40,9 +74,18 @@ export default async function IngredientsPage() {
 
   const { data: ingredients } = await supabase
     .from('ingredients')
-    .select('id, nom, date_achat, date_peremption, quantite, unite, categorie:categorie_id(nom)')
+    .select('id, nom, date_achat, date_peremption, quantite, unite, categorie:categorie_id(id, nom)')
     .order('date_peremption', { ascending: true })
     .returns<IngredientRow[]>()
+
+  const { data: recettes } = await supabase
+    .from('recettes')
+    .select('id, nom, temps_preparation_min, recette_ingredients(categorie_id)')
+    .returns<RecetteWithCats[]>()
+
+  const suggestions = ingredients && recettes
+    ? suggestRecettes(ingredients, recettes, 5)
+    : []
 
   return (
     <main className="min-h-screen bg-zinc-950 px-4 py-12">
@@ -75,6 +118,30 @@ export default async function IngredientsPage() {
             </Link>
           </div>
         </div>
+
+        {suggestions.length > 0 && (
+          <section className="mb-6 bg-emerald-950/30 border border-emerald-900/50 rounded-2xl p-4">
+            <p className="text-emerald-300 text-xs uppercase tracking-wide font-medium mb-3">
+              Pour utiliser ce qui périme bientôt
+            </p>
+            <ul className="space-y-2">
+              {suggestions.map((s) => (
+                <li key={s.id}>
+                  <Link
+                    href={`/recettes/${s.id}`}
+                    className="flex items-center justify-between bg-zinc-900 rounded-lg border border-zinc-800 px-4 py-2.5 hover:border-zinc-700 transition-colors"
+                  >
+                    <span className="text-zinc-50 text-sm">{s.nom}</span>
+                    <span className="text-zinc-500 text-xs shrink-0">
+                      {s.matchCount} ingrédient{s.matchCount > 1 ? 's' : ''} match
+                      {s.temps_preparation_min ? ` · ${s.temps_preparation_min} min` : ''}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         {!ingredients || ingredients.length === 0 ? (
           <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-8 text-center">
