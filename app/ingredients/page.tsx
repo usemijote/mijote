@@ -104,7 +104,13 @@ export default async function IngredientsPage() {
             </h1>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <Link
+              href="/ingredients/historique"
+              className="text-zinc-400 hover:text-zinc-200 text-sm transition-colors"
+            >
+              Historique
+            </Link>
             <Link
               href="/ingredients/nouveau"
               className="text-zinc-400 hover:text-zinc-200 text-sm transition-colors"

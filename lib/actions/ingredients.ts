@@ -107,6 +107,31 @@ export async function updateIngredient(formData: FormData) {
 
 type ArchiveReason = 'used' | 'wasted' | 'deleted'
 
+export async function restoreIngredient(formData: FormData) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) throw new Error('Non authentifié')
+
+  const id = String(formData.get('id') ?? '')
+  if (!id) throw new Error('Identifiant manquant')
+
+  const { error } = await supabase
+    .from('ingredients')
+    .update({
+      archived_at: null,
+      archived_reason: null,
+    })
+    .eq('id', id)
+    .eq('user_id', user.id)
+
+  if (error) throw new Error(`Erreur Supabase : ${error.message}`)
+
+  revalidatePath('/ingredients')
+  revalidatePath('/ingredients/historique')
+}
+
 export async function archiveIngredient(formData: FormData) {
   const supabase = await createClient()
   const {
