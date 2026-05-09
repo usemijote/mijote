@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { deleteIngredient } from '@/lib/actions/ingredients'
+import { DeleteIngredientButton } from '@/components/DeleteIngredientButton'
 
 type IngredientRow = {
   id: string
@@ -190,16 +190,7 @@ export default async function IngredientsPage() {
                     >
                       Modifier
                     </Link>
-                    <form action={deleteIngredient}>
-                      <input type="hidden" name="id" value={ing.id} />
-                      <button
-                        type="submit"
-                        className="text-zinc-600 hover:text-red-400 text-sm transition-colors"
-                        aria-label={`Supprimer ${ing.nom}`}
-                      >
-                        Supprimer
-                      </button>
-                    </form>
+                    <DeleteIngredientButton id={ing.id} nom={ing.nom} />
                   </div>
                 </li>
               )
