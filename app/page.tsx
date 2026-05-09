@@ -34,19 +34,16 @@ export default async function Home() {
             </Link>
             <Link
               href="/stats"
-              className="block w-full text-center bg-zinc-900 text-zinc-50 border border-zinc-800 px-4 py-2.5 rounded-lg font-medium hover:bg-zinc-800 transition-colors mb-3"
+              className="block w-full text-center bg-zinc-900 text-zinc-50 border border-zinc-800 px-4 py-2.5 rounded-lg font-medium hover:bg-zinc-800 transition-colors mb-2"
             >
               Stats
             </Link>
-
-            <form action="/auth/signout" method="post" className="text-center">
-              <button
-                type="submit"
-                className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors"
-              >
-                Se déconnecter
-              </button>
-            </form>
+            <Link
+              href="/profil"
+              className="block w-full text-center bg-zinc-900 text-zinc-50 border border-zinc-800 px-4 py-2.5 rounded-lg font-medium hover:bg-zinc-800 transition-colors"
+            >
+              Profil
+            </Link>
           </div>
         ) : (
           <Link
