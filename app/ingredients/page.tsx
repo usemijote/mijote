@@ -182,16 +182,25 @@ export default async function IngredientsPage() {
                     </span>
                   </div>
 
-                  <form action={deleteIngredient}>
-                    <input type="hidden" name="id" value={ing.id} />
-                    <button
-                      type="submit"
-                      className="text-zinc-600 hover:text-red-400 text-sm transition-colors"
-                      aria-label={`Supprimer ${ing.nom}`}
+                  <div className="flex flex-col items-end gap-2 shrink-0">
+                    <Link
+                      href={`/ingredients/${ing.id}/edit`}
+                      className="text-zinc-600 hover:text-zinc-200 text-sm transition-colors"
+                      aria-label={`Modifier ${ing.nom}`}
                     >
-                      Supprimer
-                    </button>
-                  </form>
+                      Modifier
+                    </Link>
+                    <form action={deleteIngredient}>
+                      <input type="hidden" name="id" value={ing.id} />
+                      <button
+                        type="submit"
+                        className="text-zinc-600 hover:text-red-400 text-sm transition-colors"
+                        aria-label={`Supprimer ${ing.nom}`}
+                      >
+                        Supprimer
+                      </button>
+                    </form>
+                  </div>
                 </li>
               )
             })}

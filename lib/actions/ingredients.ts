@@ -57,6 +57,47 @@ export async function addIngredient(formData: FormData) {
   redirect('/ingredients')
 }
 
+export async function updateIngredient(formData: FormData) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) throw new Error('Non authentifié')
+
+  const id = String(formData.get('id') ?? '')
+  if (!id) throw new Error('Identifiant manquant')
+
+  const nom = String(formData.get('nom') ?? '').trim()
+  const categorieId = Number(formData.get('categorie_id'))
+  const dateAchatStr = String(formData.get('date_achat') ?? '')
+  const datePeremptionStr = String(formData.get('date_peremption') ?? '')
+  const quantiteRaw = formData.get('quantite')
+  const uniteRaw = formData.get('unite')
+
+  if (!nom) throw new Error('Le nom est obligatoire')
+  if (!categorieId) throw new Error('La catégorie est obligatoire')
+  if (!dateAchatStr) throw new Error('La date d\'achat est obligatoire')
+  if (!datePeremptionStr) throw new Error('La date de péremption est obligatoire')
+
+  const { error } = await supabase
+    .from('ingredients')
+    .update({
+      nom,
+      categorie_id: categorieId,
+      date_achat: dateAchatStr,
+      date_peremption: datePeremptionStr,
+      quantite: quantiteRaw ? Number(quantiteRaw) : null,
+      unite: uniteRaw ? String(uniteRaw).trim() || null : null,
+    })
+    .eq('id', id)
+    .eq('user_id', user.id)
+
+  if (error) throw new Error(`Erreur Supabase : ${error.message}`)
+
+  revalidatePath('/ingredients')
+  redirect('/ingredients')
+}
+
 export async function deleteIngredient(formData: FormData) {
   const supabase = await createClient()
   const {
