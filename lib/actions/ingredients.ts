@@ -12,15 +12,18 @@ export async function addIngredient(formData: FormData) {
   if (!user) throw new Error('Non authentifié')
 
   const nom = String(formData.get('nom') ?? '').trim()
-  const categorieId = Number(formData.get('categorie_id'))
+  const categorieIdRaw = formData.get('categorie_id')
+  const categorieId = categorieIdRaw && String(categorieIdRaw).trim() ? Number(categorieIdRaw) : null
   const dateAchatStr = String(formData.get('date_achat') ?? '')
   const datePeremptionOverrideStr = String(formData.get('date_peremption_override') ?? '').trim()
   const quantiteRaw = formData.get('quantite')
   const uniteRaw = formData.get('unite')
 
   if (!nom) throw new Error('Le nom est obligatoire')
-  if (!categorieId) throw new Error('La catégorie est obligatoire')
   if (!dateAchatStr) throw new Error('La date d\'achat est obligatoire')
+  if (!categorieId && !datePeremptionOverrideStr) {
+    throw new Error('Choisis une catégorie OU saisis une date de péremption')
+  }
 
   let datePeremptionStr: string
 
@@ -30,7 +33,7 @@ export async function addIngredient(formData: FormData) {
     const { data: categorie, error: catError } = await supabase
       .from('categories_aliments')
       .select('duree_typique_jours')
-      .eq('id', categorieId)
+      .eq('id', categorieId!)
       .single()
 
     if (catError || !categorie) throw new Error('Catégorie introuvable')
@@ -68,14 +71,14 @@ export async function updateIngredient(formData: FormData) {
   if (!id) throw new Error('Identifiant manquant')
 
   const nom = String(formData.get('nom') ?? '').trim()
-  const categorieId = Number(formData.get('categorie_id'))
+  const categorieIdRaw = formData.get('categorie_id')
+  const categorieId = categorieIdRaw && String(categorieIdRaw).trim() ? Number(categorieIdRaw) : null
   const dateAchatStr = String(formData.get('date_achat') ?? '')
   const datePeremptionStr = String(formData.get('date_peremption') ?? '')
   const quantiteRaw = formData.get('quantite')
   const uniteRaw = formData.get('unite')
 
   if (!nom) throw new Error('Le nom est obligatoire')
-  if (!categorieId) throw new Error('La catégorie est obligatoire')
   if (!dateAchatStr) throw new Error('La date d\'achat est obligatoire')
   if (!datePeremptionStr) throw new Error('La date de péremption est obligatoire')
 

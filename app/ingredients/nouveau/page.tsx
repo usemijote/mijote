@@ -100,12 +100,11 @@ export default async function NouvelIngredientPage({
             <select
               id="categorie_id"
               name="categorie_id"
-              required
               defaultValue={prefilledCategoryId ?? ''}
               className="w-full px-4 py-2.5 bg-zinc-900 border border-zinc-800 text-zinc-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-500"
             >
-              <option value="" disabled>
-                Choisir une catégorie…
+              <option value="">
+                Aucune catégorie
               </option>
               {categories?.map((cat) => (
                 <option key={cat.id} value={cat.id}>
