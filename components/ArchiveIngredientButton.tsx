@@ -2,19 +2,19 @@
 
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { deleteIngredient } from '@/lib/actions/ingredients'
+import { archiveIngredient } from '@/lib/actions/ingredients'
 
-export function DeleteIngredientButton({ id, nom }: { id: string; nom: string }) {
+export function ArchiveIngredientButton({ id, nom }: { id: string; nom: string }) {
   const [showConfirm, setShowConfirm] = useState(false)
 
   if (!showConfirm) {
     return (
       <button
         onClick={() => setShowConfirm(true)}
-        className="text-zinc-600 hover:text-red-400 text-sm transition-colors"
-        aria-label={`Supprimer ${nom}`}
+        className="text-zinc-600 hover:text-emerald-400 text-sm transition-colors"
+        aria-label={`Marquer ${nom} comme utilisé`}
       >
-        Supprimer
+        ✓ Utilisé
       </button>
     )
   }
@@ -31,18 +31,19 @@ export function DeleteIngredientButton({ id, nom }: { id: string; nom: string })
       <form
         action={async (formData) => {
           try {
-            await deleteIngredient(formData)
-            toast.success(`${nom} supprimé`)
+            await archiveIngredient(formData)
+            toast.success(`${nom} marqué comme utilisé`)
           } catch {
-            toast.error(`Erreur — ${nom} non supprimé`)
+            toast.error(`Erreur — ${nom} non archivé`)
             setShowConfirm(false)
           }
         }}
       >
         <input type="hidden" name="id" value={id} />
+        <input type="hidden" name="reason" value="used" />
         <button
           type="submit"
-          className="text-red-400 hover:text-red-300 text-sm font-medium transition-colors"
+          className="text-emerald-400 hover:text-emerald-300 text-sm font-medium transition-colors"
         >
           Confirmer
         </button>

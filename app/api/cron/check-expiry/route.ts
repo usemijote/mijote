@@ -43,6 +43,7 @@ export async function GET(request: Request) {
       .from('ingredients')
       .select('nom, date_peremption, categorie:categorie_id(nom)')
       .eq('user_id', user.id)
+      .is('archived_at', null)
       .gte('date_peremption', todayStr)
       .lte('date_peremption', inTwoDaysStr)
       .order('date_peremption', { ascending: true })

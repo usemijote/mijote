@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { DeleteIngredientButton } from '@/components/DeleteIngredientButton'
+import { ArchiveIngredientButton } from '@/components/ArchiveIngredientButton'
 
 type IngredientRow = {
   id: string
@@ -75,6 +75,7 @@ export default async function IngredientsPage() {
   const { data: ingredients } = await supabase
     .from('ingredients')
     .select('id, nom, date_achat, date_peremption, quantite, unite, categorie:categorie_id(id, nom)')
+    .is('archived_at', null)
     .order('date_peremption', { ascending: true })
     .returns<IngredientRow[]>()
 
@@ -190,7 +191,7 @@ export default async function IngredientsPage() {
                     >
                       Modifier
                     </Link>
-                    <DeleteIngredientButton id={ing.id} nom={ing.nom} />
+                    <ArchiveIngredientButton id={ing.id} nom={ing.nom} />
                   </div>
                 </li>
               )

@@ -98,7 +98,9 @@ export async function updateIngredient(formData: FormData) {
   redirect('/ingredients')
 }
 
-export async function deleteIngredient(formData: FormData) {
+type ArchiveReason = 'used' | 'wasted' | 'deleted'
+
+export async function archiveIngredient(formData: FormData) {
   const supabase = await createClient()
   const {
     data: { user },
@@ -106,9 +108,22 @@ export async function deleteIngredient(formData: FormData) {
   if (!user) throw new Error('Non authentifié')
 
   const id = String(formData.get('id') ?? '')
+  const reasonRaw = String(formData.get('reason') ?? 'used')
+  const reason: ArchiveReason = ['used', 'wasted', 'deleted'].includes(reasonRaw)
+    ? (reasonRaw as ArchiveReason)
+    : 'used'
+
   if (!id) throw new Error('Identifiant manquant')
 
-  const { error } = await supabase.from('ingredients').delete().eq('id', id)
+  const { error } = await supabase
+    .from('ingredients')
+    .update({
+      archived_at: new Date().toISOString(),
+      archived_reason: reason,
+    })
+    .eq('id', id)
+    .eq('user_id', user.id)
+
   if (error) throw new Error(`Erreur Supabase : ${error.message}`)
 
   revalidatePath('/ingredients')
