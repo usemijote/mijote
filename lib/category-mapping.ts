@@ -62,15 +62,45 @@ const TAG_TO_CATEGORY_NAME: Record<string, string> = {
   'en:breads': 'Pain frais',
   'en:fresh-breads': 'Pain frais',
 
-  'en:canned-foods': 'Conserve ouverte',
-  'en:canned-vegetables': 'Conserve ouverte',
-  'en:canned-fishes': 'Conserve ouverte',
+  'en:canned-foods': 'Conserve non ouverte',
+  'en:canned-vegetables': 'Conserve non ouverte',
+  'en:canned-fishes': 'Conserve non ouverte',
   'en:sauces': 'Sauce ouverte',
   'en:tomato-sauces': 'Sauce ouverte',
 
   'en:cooked-pastas': 'Pâtes ou riz cuits',
   'en:cooked-rices': 'Pâtes ou riz cuits',
   'en:prepared-dishes': 'Plat cuisiné maison',
+
+  'en:waters': 'Eau',
+  'en:mineral-waters': 'Eau',
+  'en:spring-waters': 'Eau',
+
+  'en:fruit-juices': 'Jus de fruit ouvert',
+  'en:juices': 'Jus de fruit ouvert',
+
+  'en:carbonated-drinks': 'Soda non ouvert',
+  'en:sodas': 'Soda non ouvert',
+  'en:sweetened-beverages': 'Soda non ouvert',
+
+  'en:frozen-foods': 'Surgelés',
+  'en:frozen-vegetables': 'Surgelés',
+  'en:frozen-meats': 'Surgelés',
+  'en:frozen-fishes': 'Surgelés',
+  'en:ice-creams': 'Surgelés',
+
+  'en:pastas': 'Pâtes ou riz secs',
+  'en:rices': 'Pâtes ou riz secs',
+  'en:dry-pastas': 'Pâtes ou riz secs',
+  'en:cereals': 'Pâtes ou riz secs',
+
+  'en:olive-oils': 'Huile',
+  'en:vegetable-oils': 'Huile',
+  'en:oils': 'Huile',
+
+  'en:jams': 'Confiture ouverte',
+  'en:fruit-spreads': 'Confiture ouverte',
+  'en:honey': 'Confiture ouverte',
 }
 
 export function suggestCategoryName(categoryTags: string[]): string | null {
