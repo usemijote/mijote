@@ -26,6 +26,25 @@ export async function GET(request: Request) {
   const todayStr = today.toISOString().split('T')[0]
   const inTwoDaysStr = inTwoDays.toISOString().split('T')[0]
 
+  // Étape 1 — Auto-archive les ingrédients périmés depuis plus de 7 jours
+  // (batch UPDATE en une seule requête, tous users confondus, RLS bypass via service_role)
+  const sevenDaysAgo = new Date(today)
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+  const sevenDaysAgoStr = sevenDaysAgo.toISOString().split('T')[0]
+
+  const { data: autoArchived, error: archiveError } = await admin
+    .from('ingredients')
+    .update({
+      archived_at: new Date().toISOString(),
+      archived_reason: 'wasted',
+    })
+    .is('archived_at', null)
+    .lt('date_peremption', sevenDaysAgoStr)
+    .select('id')
+
+  const autoArchivedCount = autoArchived?.length ?? 0
+
+  // Étape 2 — Envoyer les mails d'alerte sur les ingrédients qui périment dans 0-2 jours
   const { data: usersData, error: usersError } = await admin.auth.admin.listUsers()
   if (usersError) {
     return NextResponse.json({ error: usersError.message }, { status: 500 })
@@ -77,6 +96,8 @@ export async function GET(request: Request) {
 
   return NextResponse.json({
     ran_at: new Date().toISOString(),
+    auto_archived_count: autoArchivedCount,
+    auto_archive_error: archiveError?.message ?? null,
     users_processed: usersData.users.length,
     results,
   })
