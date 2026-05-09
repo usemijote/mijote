@@ -4,17 +4,59 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import { archiveIngredient } from '@/lib/actions/ingredients'
 
-export function ArchiveIngredientButton({ id, nom }: { id: string; nom: string }) {
+type Reason = 'used' | 'wasted'
+
+type Config = {
+  idleLabel: string
+  confirmLabel: string
+  successMessage: (nom: string) => string
+  errorMessage: (nom: string) => string
+  idleClass: string
+  confirmClass: string
+  ariaLabel: (nom: string) => string
+}
+
+const CONFIG: Record<Reason, Config> = {
+  used: {
+    idleLabel: '✓ Utilisé',
+    confirmLabel: 'Confirmer',
+    successMessage: (nom) => `${nom} marqué comme utilisé`,
+    errorMessage: (nom) => `Erreur — ${nom} non archivé`,
+    idleClass: 'text-zinc-600 hover:text-emerald-400',
+    confirmClass: 'text-emerald-400 hover:text-emerald-300',
+    ariaLabel: (nom) => `Marquer ${nom} comme utilisé`,
+  },
+  wasted: {
+    idleLabel: '× Gaspillé',
+    confirmLabel: 'Confirmer',
+    successMessage: (nom) => `${nom} marqué comme gaspillé`,
+    errorMessage: (nom) => `Erreur — ${nom} non archivé`,
+    idleClass: 'text-zinc-600 hover:text-red-400',
+    confirmClass: 'text-red-400 hover:text-red-300',
+    ariaLabel: (nom) => `Marquer ${nom} comme gaspillé`,
+  },
+}
+
+export function ArchiveIngredientButton({
+  id,
+  nom,
+  reason,
+}: {
+  id: string
+  nom: string
+  reason: Reason
+}) {
   const [showConfirm, setShowConfirm] = useState(false)
+  const config = CONFIG[reason]
 
   if (!showConfirm) {
     return (
       <button
         onClick={() => setShowConfirm(true)}
-        className="text-zinc-600 hover:text-emerald-400 text-sm transition-colors"
-        aria-label={`Marquer ${nom} comme utilisé`}
+        className={`text-sm transition-colors ${config.idleClass}`}
+        aria-label={config.ariaLabel(nom)}
       >
-        ✓ Utilisé
+        {config.idleLabel}
       </button>
     )
   }
@@ -32,20 +74,20 @@ export function ArchiveIngredientButton({ id, nom }: { id: string; nom: string }
         action={async (formData) => {
           try {
             await archiveIngredient(formData)
-            toast.success(`${nom} marqué comme utilisé`)
+            toast.success(config.successMessage(nom))
           } catch {
-            toast.error(`Erreur — ${nom} non archivé`)
+            toast.error(config.errorMessage(nom))
             setShowConfirm(false)
           }
         }}
       >
         <input type="hidden" name="id" value={id} />
-        <input type="hidden" name="reason" value="used" />
+        <input type="hidden" name="reason" value={reason} />
         <button
           type="submit"
-          className="text-emerald-400 hover:text-emerald-300 text-sm font-medium transition-colors"
+          className={`text-sm font-medium transition-colors ${config.confirmClass}`}
         >
-          Confirmer
+          {config.confirmLabel}
         </button>
       </form>
     </div>

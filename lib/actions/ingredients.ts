@@ -18,6 +18,8 @@ export async function addIngredient(formData: FormData) {
   const datePeremptionOverrideStr = String(formData.get('date_peremption_override') ?? '').trim()
   const quantiteRaw = formData.get('quantite')
   const uniteRaw = formData.get('unite')
+  const codeBarresRaw = formData.get('code_barres')
+  const imageUrlRaw = formData.get('image_url')
 
   if (!nom) throw new Error('Le nom est obligatoire')
   if (!dateAchatStr) throw new Error('La date d\'achat est obligatoire')
@@ -52,6 +54,8 @@ export async function addIngredient(formData: FormData) {
     date_peremption: datePeremptionStr,
     quantite: quantiteRaw ? Number(quantiteRaw) : null,
     unite: uniteRaw ? String(uniteRaw).trim() || null : null,
+    code_barres: codeBarresRaw ? String(codeBarresRaw).trim() || null : null,
+    image_url: imageUrlRaw ? String(imageUrlRaw).trim() || null : null,
   })
 
   if (error) throw new Error(`Erreur Supabase : ${error.message}`)

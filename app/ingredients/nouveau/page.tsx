@@ -78,6 +78,9 @@ export default async function NouvelIngredientPage({
         )}
 
         <form action={addIngredient} className="space-y-5">
+          {barcode && <input type="hidden" name="code_barres" value={barcode} />}
+          {prefilledImage && <input type="hidden" name="image_url" value={prefilledImage} />}
+
           <div>
             <label htmlFor="nom" className="block text-sm font-medium text-zinc-300 mb-2">
               Nom

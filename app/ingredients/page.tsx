@@ -191,7 +191,8 @@ export default async function IngredientsPage() {
                     >
                       Modifier
                     </Link>
-                    <ArchiveIngredientButton id={ing.id} nom={ing.nom} />
+                    <ArchiveIngredientButton id={ing.id} nom={ing.nom} reason="used" />
+                    <ArchiveIngredientButton id={ing.id} nom={ing.nom} reason="wasted" />
                   </div>
                 </li>
               )
